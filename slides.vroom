@@ -1,0 +1,193 @@
+# This is a sample Vroom input file. It should help you get started.
+#
+# Edit this file with your content. Then run `vroom --vroom` to start
+# the show!
+#
+# See `perldoc Vroom` for complete details.
+#
+---- config
+# Basic config options.
+title: Vroom!
+indent: 5
+height: 18
+width: 69
+#auto_size: 1
+skip: 0
+
+# The following options are for Gvim usage.
+vim: gvim
+gvimrc: |
+  set wrap
+  set listchars=""
+  set guifont=Source_Code_Pro:h24
+#   set guicursor=a:blinkon0-ver25-Cursor
+#   colorscheme default
+
+---- center
+Rack: a Ruby Webserver Interface
+================================
+
+---- center
+
+Paweł Pacana
+
+http://mostlyobvio.us
+
+----
+
++- Rack
++- HTTP
++- RFC2616
++- Transfer-Encoding: Chunked
+
+----
+== Ruby + Web
+
+- WEBrick, Mongrel, Passenger, Thin, Ebb, Puma, Rainbows, Unicorn, Reel, Zbatery, (...)
+- Rails, Sinatra, Ramaze, Camping, Wee, Merb, (...)
+
+----
+== SPEC 1/3
+
+A Rack application is a Ruby object (not a class) that responds to call.
+It takes exactly one argument, the environment and returns an Array of 
+exactly three values: The status, the headers, and the body.
+
+----
+== SPEC 2/3
+
+The header must respond to each, and yield values of key and value.
+Special headers starting "rack." are for communicating with the server, 
+and must not be sent back to the client.
+
+The header keys must be Strings. The values of the header must be Strings.
+The Body must respond to each and must only yield String values.
+
+---- ruby,i4
+
+class HelloWorld
+  def call(env)
+    [200, {"Content-Type" => "text/plain"}, ["Hello world!"]]
+  end
+end
+
+rack_app = HelloWorld.new
+
+----
+== SPEC 3/3
+
+The environment must be an instance of Hash that includes CGI-like headers.
+
+---- ruby
+{
+       "GATEWAY_INTERFACE" => "CGI/1.1",
+               "PATH_INFO" => "/favicon.ico",
+            "QUERY_STRING" => "",
+             "REMOTE_ADDR" => "127.0.0.1",
+             "REMOTE_HOST" => "localhost",
+          "REQUEST_METHOD" => "GET",
+             "REQUEST_URI" => "http://localhost:9292/favicon.ico",
+             "SCRIPT_NAME" => "",
+             "SERVER_NAME" => "localhost",
+             "SERVER_PORT" => "9292",
+         "SERVER_PROTOCOL" => "HTTP/1.1",
+         "SERVER_SOFTWARE" => "WEBrick/1.3.1 (Ruby/1.9.3/2013-01-15)",
+               "HTTP_HOST" => "localhost:9292",
+         "HTTP_CONNECTION" => "keep-alive",
+             "HTTP_ACCEPT" => "*/*",
+         "HTTP_USER_AGENT" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17",
+    "HTTP_ACCEPT_ENCODING" => "gzip,deflate,sdch",
+    "HTTP_ACCEPT_LANGUAGE" => "pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4",
+     "HTTP_ACCEPT_CHARSET" => "UTF-8,*;q=0.5",
+            "rack.version" => [1,1],
+              "rack.input" => #<Rack::Lint::InputWrapper:0x007f81d8024020 @input=#<StringIO:0x007f81d8022c20>>,
+             "rack.errors" => #<Rack::Lint::ErrorWrapper:0x007f81d8023fa8 @error=#<IO:<STDERR>>>,
+        "rack.multithread" => true,
+       "rack.multiprocess" => false,
+           "rack.run_once" => false,
+         "rack.url_scheme" => "http",
+            "HTTP_VERSION" => "HTTP/1.1",
+            "REQUEST_PATH" => "/favicon.ico"
+}
+
+----
+== Rackup
+
+- config.ru
+- Rack::CommonLogger
+- Rack::Lint
+
+----
+== Rails on Rack
+
+- rake middleware
+- http://guides.rubyonrails.org/rails_on_rack.html
+- rails-api
+
+----
+== Zastosowania dla middleware
+
+- rack-contrib
+- CodeRack
+
+----
+== Testowanie integracyjne
+
+- Rack::Test
+- Rack::Lint
+
+----
+== Komponowanie applikacji
+
+- Rack::Builder
+- kontroler w Rails
+
+----
+== Uwaga
+
+- middleware a kolejność w stosie
+- konwencje (logger)
+- HTTP streaming
+- thread safety
+
+---- ruby,i4
+# https://gist.github.com/4463147
+class Safeware
+  def initialize(app)
+    @app = app
+  end
+
+  # This dup pattern is used frequently to avoid race conditions on state stored
+  # inside this middleware. It's not foolproof, but if you're just using
+  # single-reference instance variables (instance variables with primitive
+  # values (not data structures)) then it works well.
+  def call(env)
+    dup._call(env)
+  end
+
+  def _call(env)
+    # before actions
+    status, headers, body = @app.call(env)
+    # after actions
+    return status, headers, body
+  ensure
+    # If we're raising an exception, then the body from the app will not be
+    # passed on to the server or any parent middleware. In order to conform to
+    # the body close specification, we therefore must close it here under that
+    # condition. n.b. it's possible that an exception occurs before body is set,
+    # so we check for body first.
+    body.close if body && body.respond_to?(:close) && $!
+  end
+end
+
+----
+== Streaming
+
+- Rack::Stream hack hack hack
+- Rack 1.5 + Hijack API
+
+---- center
+== Pytania
+
+<pawel.pacana@gmail.com>
+

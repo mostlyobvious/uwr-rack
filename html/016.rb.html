@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>016.rb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 8) {
+        window.location = "015" + ".html";
+        return false;
+    }
+    if (keynum == 13 || keynum == 32) {
+        window.location = "017" + ".html";
+        return false;
+    }
+    if (keynum == 73 || keynum == 105) {
+        window.location = "index.html";
+        return false;
+    }
+    return true;
+}
+</script>
+</head>
+<body onkeypress="return navigate(event)">
+<pre>    # https://gist.github.com/4463147
+    class Safeware
+      def initialize(app)
+        @app = app
+      end
+    
+      # This dup pattern is used frequently to avoid race conditions on state stored
+      # inside this middleware. It's not foolproof, but if you're just using
+      # single-reference instance variables (instance variables with primitive
+      # values (not data structures)) then it works well.
+      def call(env)
+        dup._call(env)
+      end
+    
+      def _call(env)
+        # before actions
+        status, headers, body = @app.call(env)
+        # after actions
+        return status, headers, body
+      ensure
+        # If we're raising an exception, then the body from the app will not be
+        # passed on to the server or any parent middleware. In order to conform to
+        # the body close specification, we therefore must close it here under that
+        # condition. n.b. it's possible that an exception occurs before body is set,
+        # so we check for body first.
+        body.close if body &amp;&amp; body.respond_to?(:close) &amp;&amp; $!
+      end
+    end
+</pre>
+</body>
