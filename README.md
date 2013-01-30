@@ -2,7 +2,7 @@
 
 ## Slajdy
 
-Źródłowe [slides.vroom](slides.vroom) lub wyeksportowany [html](html/index.html).
+Źródłowe [slides.vroom](https://github.com/pawelpacana/uwr-rack/blob/master/slides.vroom) lub wyeksportowane w `html/`.
 
 ## Przykłady
 
