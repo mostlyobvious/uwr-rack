@@ -22,11 +22,11 @@
 * https://github.com/rack/rack-contrib
 * http://coderack.org/middlewares
 
-# Rack future
+## Rack future
 
 * https://gist.github.com/11c3491561802e573a47
 
-# Streaming
+## Streaming
 
 * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
 * https://github.com/intridea/rack-stream
